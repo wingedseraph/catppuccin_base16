@@ -19,49 +19,48 @@ const mapping = {
 
 let previousInput = "";
 
+
 function convertColors() {
   const inputData = document.getElementById("input").value.trim();
   let outputData = "";
-  if ((inputData.value = "")) return;
 
-  if (inputData.startsWith("base00:")) {
-    const lines = inputData.split("\n").filter((line) => line.trim() !== "");
-    outputData = lines
-      .map((line) => {
-        const match = line.match(/(base0[0-9A-F]):\s*"?(\w{6})"?/i);
-        if (match) {
-          const [_, baseCode, color] = match;
-          const newName = mapping[baseCode];
-          if (newName) {
-            return `\t${newName} = "#${color}", -- ${baseCode}`;
-          }
-        }
-        return null;
-      })
-      .filter(Boolean)
-      .join("\n");
-  } else {
-    const lines = inputData.split("\n").filter((line) => line.trim() !== "");
-    outputData = lines
-      .map((line) => {
-        const match = line.match(/(base0[0-9A-F])\s*=\s*"(#\w{6})",?/i);
-        if (match) {
-          const [_, baseCode, color] = match;
-          const newName = mapping[baseCode];
-          if (newName) {
-            return `\t${newName} = "${color}", -- ${baseCode}`;
-          }
-        }
-        return null;
-      })
-      .filter(Boolean)
-      .join("\n");
-  }
+  if (inputData === "") return;
 
-  document.getElementById("output").value = outputData;
+  const lines = inputData.split("\n").filter((line) => line.trim() !== "");
+
+  lines.forEach((line) => {
+    if (line.toLowerCase().startsWith("author")) {
+      return;
+    }
+
+    if (line.toLowerCase().startsWith("#")) {
+      return;
+    }
+
+    const nameMatch = line.match(/^scheme:\s*"(.*?)"/);
+    if (nameMatch) {
+      const schemeName = nameMatch[1];
+      outputData += `-- ${schemeName}\n`;
+      return;
+    }
+
+    if (line.startsWith("base")) {
+      const match = line.match(/(base0[0-9A-F]):\s*"?(\w{6})"?/i);
+      if (match) {
+        const [_, baseCode, color] = match;
+        const newName = mapping[baseCode];
+        if (newName) {
+          outputData += `${newName} = "#${color}", -- ${baseCode}\n`;
+        }
+      }
+    }
+  });
+
+  document.getElementById("output").value = outputData.trim();
 
   copyToClipboard(outputData);
 }
+
 
 /**
  * copy data to clipboard
