@@ -19,31 +19,71 @@ const mapping = {
 
 let previousInput = "";
 
-
 function convertColors() {
   const inputData = document.getElementById("input").value.trim();
   let outputData = "";
 
+  // Проверяем, если input пустой
   if (inputData === "") return;
 
   const lines = inputData.split("\n").filter((line) => line.trim() !== "");
 
+  // Перебор строк
+  let isPalette = false;
   lines.forEach((line) => {
+    // Пропускаем строку с автором
     if (line.toLowerCase().startsWith("author")) {
       return;
     }
 
+    // Пропускаем строки с комментариями
     if (line.toLowerCase().startsWith("#")) {
       return;
     }
 
-    const nameMatch = line.match(/^scheme:\s*"(.*?)"/);
+    // Обрабатываем строку с именем (scheme)
+    const schemeMatch = line.match(/^scheme:\s*"(.*?)"/);
+    if (schemeMatch) {
+      const schemeName = schemeMatch[1];
+      outputData += `-- ${schemeName}\n`;
+      return;
+    }
+
+    const variantMatch = line.match(/^variant:\s*"(.*?)"/);
+    if (variantMatch) {
+      const schemeName = variantMatch[1];
+      outputData += `-- ${schemeName} theme\n`;
+      return;
+    }
+  const nameMatch = line.match(/^name:\s*"(.*?)"/);
     if (nameMatch) {
       const schemeName = nameMatch[1];
       outputData += `-- ${schemeName}\n`;
       return;
     }
 
+    // Проверяем начало палитры
+    if (line.toLowerCase().startsWith("palette:")) {
+      isPalette = true;
+      return;
+    }
+
+    // Если мы находимся в палитре
+    if (isPalette) {
+      const match = line.match(/^\s*(base0[0-9A-F]):\s*"#?(\w{6})"?/i);
+      if (match) {
+        const [_, baseCode, color] = match;
+        const newName = mapping[baseCode];
+        if (newName) {
+          outputData += `${newName} = "#${color}", -- ${baseCode}\n`;
+        }
+      }
+
+      // Если палитра завершена
+      if (line.trim() === "") {
+        isPalette = false;
+      }
+    }
     if (line.startsWith("base")) {
       const match = line.match(/(base0[0-9A-F]):\s*"?(\w{6})"?/i);
       if (match) {
@@ -56,11 +96,12 @@ function convertColors() {
     }
   });
 
+  // Устанавливаем результат в поле output
   document.getElementById("output").value = outputData.trim();
 
+  // Копируем результат в буфер обмена
   copyToClipboard(outputData);
 }
-
 
 /**
  * copy data to clipboard
