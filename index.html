@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>catppuccin_base16</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body,
+      html {
+        height: 100%;
+        font-family: Arial, sans-serif;
+      }
+
+      .container {
+        display: flex;
+        height: 100%;
+      }
+
+      textarea {
+        flex: 1;
+        height: 100%;
+        border: none;
+        resize: none;
+        padding: 15px;
+        font-size: 12px;
+      }
+
+      textarea:focus {
+        outline: none;
+      }
+
+      .left {
+        border-right: 1px solid #ccc;
+      }
+
+      .right {
+        background-color: #f9f9f9;
+      }
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <textarea
+        id="input"
+        class="left"
+        placeholder="Enter text here..."
+      ></textarea>
+      <textarea
+        id="output"
+        class="right"
+        placeholder="Converted text will appear here..."
+        readonly
+      ></textarea>
+    </div>
+    <script src="./converter.js"></script>
+  </body>
+</html>
