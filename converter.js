@@ -31,17 +31,14 @@ function convertColors() {
   // Перебор строк
   let isPalette = false;
   lines.forEach((line) => {
-    // Пропускаем строку с автором
     if (line.toLowerCase().startsWith("author")) {
       return;
     }
 
-    // Пропускаем строки с комментариями
     if (line.toLowerCase().startsWith("#")) {
       return;
     }
 
-    // Обрабатываем строку с именем (scheme)
     const schemeMatch = line.match(/^scheme:\s*"(.*?)"/);
     if (schemeMatch) {
       const schemeName = schemeMatch[1];
@@ -55,20 +52,18 @@ function convertColors() {
       outputData += `-- ${schemeName} theme\n`;
       return;
     }
-  const nameMatch = line.match(/^name:\s*"(.*?)"/);
+    const nameMatch = line.match(/^name:\s*"(.*?)"/);
     if (nameMatch) {
       const schemeName = nameMatch[1];
       outputData += `-- ${schemeName}\n`;
       return;
     }
 
-    // Проверяем начало палитры
     if (line.toLowerCase().startsWith("palette:")) {
       isPalette = true;
       return;
     }
 
-    // Если мы находимся в палитре
     if (isPalette) {
       const match = line.match(/^\s*(base0[0-9A-F]):\s*"#?(\w{6})"?/i);
       if (match) {
@@ -79,28 +74,34 @@ function convertColors() {
         }
       }
 
-      // Если палитра завершена
       if (line.trim() === "") {
         isPalette = false;
       }
     }
-    if (line.startsWith("base")) {
-      const match = line.match(/(base0[0-9A-F]):\s*"?(\w{6})"?/i);
-      if (match) {
-        const [_, baseCode, color] = match;
-        const newName = mapping[baseCode];
-        if (newName) {
-          outputData += `${newName} = "#${color}", -- ${baseCode}\n`;
+    if (line.trim().startsWith("base")) {
+      const patterns = [
+        /(base0[0-9A-F]):\s*"?([0-9A-Fa-f]{6})"?/,
+        /(base0[0-9A-F])\s*=\s*["']#?([0-9A-Fa-f]{6})["'],?/
+      ];
+
+      for (const pattern of patterns) {
+        const match = line.match(pattern);
+        if (match) {
+          const [, baseCode, color] = match;
+          const newName = mapping[baseCode];
+          if (newName) {
+            outputData += `${newName} = "#${color}", -- ${baseCode}\n`;
+          }
         }
       }
     }
   });
 
-  // Устанавливаем результат в поле output
   document.getElementById("output").value = outputData.trim();
 
-  // Копируем результат в буфер обмена
-  copyToClipboard(outputData);
+  if (document.getElementById("output").value !== "") {
+    copyToClipboard(outputData);
+  }
 }
 
 /**
